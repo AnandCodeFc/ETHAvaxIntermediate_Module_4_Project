@@ -25,6 +25,7 @@ contract GameCloneToken is ERC20 {
     }
 
     event Purchase(address indexed user, string item);
+    event TokenTransfer(address indexed from, address indexed to, uint256 amount);
 
     function _initializeStore(uint256 itemId, string memory _itemDescription, uint256 _itemCost) internal {
         itemDescriptions[itemId] = _itemDescription;
@@ -55,8 +56,19 @@ contract GameCloneToken is ERC20 {
         return itemDescriptions[itemId];
     }
 
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        require(to != address(0), "Cannot transfer to the zero address");
+        require(balanceOf(msg.sender) >= amount, "Not enough tokens");
+
+        bool success = super.transfer(to, amount);
+        if (success) {
+            emit TokenTransfer(msg.sender, to, amount);
+        }
+        
+        return success;
+    }
+
     function getTotalPurchasedItems(address user) public view returns (uint256) {
         return totalPurchasedItems[user];
     }
 }
-
